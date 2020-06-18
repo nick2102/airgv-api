@@ -1,87 +1,22 @@
-const path = require('path')
-const express =  require('express')
-const hbs = require('hbs')
-const geocode = require('./utils/geocode')
-const forecast = require('./utils/forecast')
+const express = require('express');
+const bodyParser = require('body-parser');
+require('./db/mongoose');
 
-const app = express()
-const port = process.env.PORT || 3000
+//Routers
+const aqiData = require('./routers/AqiData');
 
-// Define paths for express config
-const publicDirectoryPath = path.join(__dirname, '../public')
-const viewsPath = path.join(__dirname, '../templates/views')
-const partialsPath = path.join(__dirname, '../templates/partials')
+const app = express();
 
-// Setup handlebars engine and views location
-app.set('view engine', 'hbs')
-app.set('views', viewsPath)
-hbs.registerPartials(partialsPath)
+const port = process.env.PORT || 3000;
 
-// Setuo static directory to serve
-app.use(express.static(publicDirectoryPath))
 
-//Routes
-app.get('', (req, res) => {
-    res.render('index', {
-        title: 'Weather App',
-        name: 'Nikola Nikoloski'
-    })
-})
+app.use(express.json());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
-app.get('/about', (req, res) => {
-    res.render('about', {
-        title: 'About Me',
-        name: 'Nikola Nikoloski'
-    })
-})
+//use routers
+app.use(aqiData);
 
-app.get('/help', (req, res) => {
-    res.render('help', {
-        title: 'Help page',
-        message: 'Help message',
-        name: 'Nikola Nikoloski'
-    })
-})
-
-app.get('/weather', (req, res) => {
-    const searchTerm = req.query.search
-
-    if(!searchTerm)
-        return res.send({ error: 'You must provide address.'})
-
-    geocode(searchTerm, (error, {latitude, longitude, location_name} = {}) => {
-        if(error)
-            return res.send({ error })
-
-        forecast(longitude, latitude, (error, forecastData) => {
-            if(error)
-                return console.log(error)
-
-            res.send({
-                forecast: forecastData,
-                location: location_name,
-                address: searchTerm
-            })
-        })
-
-    })
-})
-
-app.get('/help/*', (req, res)=> {
-    res.render('404', {
-        title: 'Article not found.',
-        name: 'Nikola Nikoloski'
-    })
-})
-
-app.get('*', (req, res)=> {
-    res.render('404', {
-        title: 'Page not Found.',
-        name: 'Nikola Nikoloski'
-    })
-})
-
-app.listen(port, () => {
-    console.log('Server is up on port ' + port)
-})
-
+app.listen(port, ()=> {
+    console.log('Server is up and running on port ' + port);
+});
