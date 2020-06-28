@@ -1,5 +1,8 @@
 const express       = require('express');
-const Aqi    = require('../models/Aqi');
+const fs = require('fs');
+const Station    = require('../models/Station');
+const Aqi    = require('../models/Station');
+const Test = require('../models/Test');
 const router        = new express.Router();
 
 //Home route info
@@ -23,6 +26,27 @@ router.get('/', async (req, res) =>{
 router.get('/current', async (req, res) => {
     try {
         res.send({ isValid: true, status: 'OK' });
+    } catch (e) {
+        res.status(400).send({ isValid: false, error: e });
+    }
+});
+
+//Save measurements
+router.post('/save-measurements', async (req, res) =>{
+
+});
+
+//test Route post
+router.post('/save-test', async (req, res) => {
+    const test = new Test(req.body);
+
+    try {
+        await test.save();
+        const response = {
+            isValid: true,
+            test: test
+        }
+        res.status(201).send(response);
     } catch (e) {
         res.status(400).send({ isValid: false, error: e });
     }

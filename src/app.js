@@ -1,6 +1,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 require('./db/mongoose');
+const FetchJsonService = require('./services/FetchJson');
+const fetchJson =  new FetchJsonService();
 
 //Routers
 const aqiData = require('./routers/AqiData');
