@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const connectionString = 'mongodb://127.0.0.1:27017/airgv-aqi';
+const connectionString = 'mongodb://ntp_super:M0therlode.321@127.0.0.1:27017/airgv-aqi';
 
 mongoose.connect(connectionString, {
     useNewUrlParser: true,
