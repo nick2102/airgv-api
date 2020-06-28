@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const connectionString = 'mongodb://ntp_super:M0therlode.321@localhost:27017/admin';
+const connectionString = 'mongodb://localhost:27017/airgv_aqi';
 
 mongoose.connect(connectionString, {
     useNewUrlParser: true,

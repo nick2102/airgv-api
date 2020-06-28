@@ -33,7 +33,7 @@ router.get('/current', async (req, res) => {
 
 //Save measurements
 router.post('/save-measurements', async (req, res) =>{
-
+    res.status(201).send({test : "test"});
 });
 
 //test Route post
