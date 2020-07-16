@@ -1,8 +1,5 @@
 const express       = require('express');
-const fs = require('fs');
 const Station    = require('../models/Station');
-const Aqi    = require('../models/Aqi');
-const Test = require('../models/Test');
 const router        = new express.Router();
 
 //Home route info
@@ -43,48 +40,40 @@ router.post('/save-measurements', async (req, res) =>{
         }
 
         const stationName = req.body.data.info.station;
-        const station = await Station.findOne({ name: stationName });
+        const year  = req.body.data.info.year;
+        const month  = req.body.data.info.month;
+        const day  = req.body.data.info.day;
+        const station = await Station.findOne({ station_name: stationName, year: year });
 
         if(!station) {
-            const newStation = new Station({ name: stationName });
-            const stationID = await newStation.save();
-            const aqiData = await Aqi.generateAqiData(stationID, req.body);
-            const newAqi = new Aqi(aqiData);
-            await newAqi.save();
+            const newStation = new Station({
+                station_name: stationName,
+                year: year,
+                aqi: await Station.generateAqiData(req.body)
+            });
+            const createdStation = await newStation.save();
 
-            return res.send({ isValid: true, data: newAqi });
+            return res.send({ isValid: true, data: createdStation });
         }
 
-        const aqi = await Aqi.findOne({ station_id:  station._id});
+        const currentDay = station['aqi'][month][day];
 
-        if(!aqi) {
-            const aqiData = await Aqi.generateAqiData(station, req.body);
-            const newAqi = new Aqi(aqiData);
-            await newAqi.save();
-
-            return res.send({ isValid: true, data: newAqi });
+        if(!currentDay){
+            station['aqi'][month][day] = [];
         }
 
-        const currentDate = req.body.data.info.date;
-        const day = currentDate.split('.')[0];
-        const month = currentDate.split('.')[1];
-        const year = currentDate.split('.')[2];
-        const measurements = aqi.year[year][month][day];
-        const seconds = await Aqi.timeToSeconds(req.body.data.info.time);
+        const a = req.body.data.info.time.split(':'); // split it at the colons
+        // minutes are worth 60 seconds. Hours are worth 60 minutes.
+        const seconds = (+a[0]) * 60 * 60 + (+a[1]) * 60 + (+a[2]);
 
-        if(!measurements){
-            aqi.year[year][month][day] = {};
-            aqi.year[year][month][day][seconds] = { pm10 : req.body.data.aqi.pm10, pm25 : req.body.data.aqi.pm25, time : req.body.data.info.time, seconds: seconds }
-            aqi.markModified('year');
-            await aqi.save();
-            return res.send({ isValid: true, data: aqi });
+        try {
+            station['aqi'][month][day].unshift({ pm10 : req.body.data.aqi.pm10, pm25 : req.body.data.aqi.pm25, time : req.body.data.info.time, seconds: seconds })
+            station.markModified('aqi');
+            station.save();
+            return res.send({ isValid: true, data: station });
+        } catch (e) {
+            res.status(500).send({ isValid: false, error: e });
         }
-
-        aqi.year[year][month][day][seconds] = { pm10 : req.body.data.aqi.pm10, pm25 : req.body.data.aqi.pm25, time : req.body.data.info.time, seconds: seconds };
-        aqi.markModified('year');
-        await aqi.save();
-
-        return res.send({ isValid: true, data: aqi });
 
     } catch (e) {
         res.status(500).send({ isValid: false, error: e });

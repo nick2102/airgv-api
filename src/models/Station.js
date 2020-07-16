@@ -2,12 +2,43 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 
 const StationSchema = new mongoose.Schema ({
-    name: {
+    year: {
         type: String,
         required: true,
-        unique: true
+    },
+    station_name: {
+        type: String,
+        required: true,
+    },
+    aqi: {
+        type: Object,
+        required: true
     }
 }, {timestamps: true} );
+
+StationSchema.statics.generateAqiData = async (req) => {
+    const currentDate = req.data.info.date;
+    const day = currentDate.split('.')[0];
+    const month = currentDate.split('.')[1];
+    const year = currentDate.split('.')[2];
+
+    const a = req.data.info.time.split(':'); // split it at the colons
+    // minutes are worth 60 seconds. Hours are worth 60 minutes.
+    const seconds = (+a[0]) * 60 * 60 + (+a[1]) * 60 + (+a[2]);
+
+    const aqiData = {};
+    aqiData[month] = {};
+    aqiData[month][day] = [];
+    aqiData[month][day].unshift({ pm10 : req.data.aqi.pm10, pm25 : req.data.aqi.pm25, time : req.data.info.time, seconds: seconds })
+    return aqiData;
+}
+
+StationSchema.statics.timeToSeconds = async (time) => {
+    const a = time.split(':'); // split it at the colons
+    // minutes are worth 60 seconds. Hours are worth 60 minutes.
+    const seconds = (+a[0]) * 60 * 60 + (+a[1]) * 60 + (+a[2]);
+    return seconds;
+}
 
 const Station = mongoose.model('Station', StationSchema);
 module.exports = Station;
