@@ -65,7 +65,7 @@ router.get('/current', async (req, res) => {
                 return res.send(errorData);
             }
 
-            return res.send({ isValid: true, data:  currentAqi[0] });
+            return res.send({ isValid: true, data:  allMeasurements ? currentAqi : currentAqi[0] });
         }
 
         const aqi = stations.map( (station) => {
