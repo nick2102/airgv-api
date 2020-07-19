@@ -25,7 +25,8 @@ router.get('/current', async (req, res) => {
     const year = today.getFullYear();
     const month = (today.getMonth() + 1) > 9 ? today.getMonth() + 1 : '0' + ( today.getMonth() + 1 );
     const day = today.getDate() > 9 ? today.getDate() : '0' + today.getDate();
-    const stationName = req.query.station_name  ? req.query.station_name : false;
+    const stationName = req.query.station_name && req.query.station_name !=='' ? req.query.station_name : false;
+    const allMeasurements = req.query.all_day && req.query.all_day === 'true';
     let errorData = {
         errorNo: "001",
         error: "Station not active at the moment.",
@@ -83,7 +84,7 @@ router.get('/current', async (req, res) => {
 
              return {
                  station_name : station.station_name,
-                 aqi: currentAqi[0]
+                 aqi: allMeasurements ? currentAqi : currentAqi[0]
              }
         });
 
