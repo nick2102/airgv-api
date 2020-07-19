@@ -21,10 +21,76 @@ router.get('/', async (req, res) =>{
 
 // Get current Air Quality
 router.get('/current', async (req, res) => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = (today.getMonth() + 1) > 9 ? today.getMonth() + 1 : '0' + ( today.getMonth() + 1 );
+    const day = today.getDate() > 9 ? today.getDate() : '0' + today.getDate();
+    const stationName = req.query.station_name  ? req.query.station_name : false;
+    let errorData = {
+        errorNo: "001",
+        error: "Station not active at the moment.",
+        data:  {
+            "pm10": "N/A",
+            "pm25": "N/A",
+            "time": "N/A",
+            "seconds": "N/A"
+        }
+    };
+    let query = { year: year }
+
+    if(stationName){
+        query['station_name'] = stationName;
+    }
+
     try {
-        res.send({ isValid: true, status: 'OK' });
+        const stations = stationName ? await Station.findOne(query) : await Station.find(query);
+        const currentTime = await Station.timeFormat(today);
+        const currentSeconds = await Station.timeToSeconds(currentTime);
+
+        if(!stations) {
+            return res.status(404).send({ isValid: false, error: "No data found." });
+        }
+
+        if(stationName) {
+            const currentAqi = stations['aqi'][month][day];
+
+            if(!currentAqi) {
+                errorData['station_name'] = stationName;
+                return res.send(errorData);
+            }
+
+            if(currentAqi[0].seconds + 120 < currentSeconds) {
+                errorData['station_name'] = stationName;
+                return res.send(errorData);
+            }
+
+            return res.send({ isValid: true, data:  currentAqi[0] });
+        }
+
+        const aqi = stations.map( (station) => {
+            const currentAqi = station['aqi'][month][day];
+
+            if(!currentAqi) {
+                errorData['station_name'] = station.station_name;
+                return errorData;
+            }
+
+            if(currentAqi[0].seconds + 120 < currentSeconds) {
+                errorData['station_name'] = station.station_name;
+                errorData['station_name'] = station.station_name;
+                return errorData;
+            }
+
+             return {
+                 station_name : station.station_name,
+                 data: currentAqi[0]
+             }
+        });
+
+        return res.send({ isValid: true, data: aqi });
+
     } catch (e) {
-        res.status(400).send({ isValid: false, error: e });
+        return res.status(400).send({ isValid: false, error: e });
     }
 });
 

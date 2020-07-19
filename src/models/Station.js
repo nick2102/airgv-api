@@ -40,5 +40,12 @@ StationSchema.statics.timeToSeconds = async (time) => {
     return seconds;
 }
 
+StationSchema.statics.timeFormat = async (today) => {
+    const hours =  today.getHours() > 9 ? today.getHours() : '0' + ( today.getHours() );
+    const minutes =  today.getMinutes() > 9 ? today.getMinutes() : '0' + ( today.getMinutes() );
+    const seconds =  today.getSeconds() > 9 ? today.getSeconds() : '0' + ( today.getSeconds() );
+    return hours + ':' + minutes + ':' + ':' + seconds;
+}
+
 const Station = mongoose.model('Station', StationSchema);
 module.exports = Station;
