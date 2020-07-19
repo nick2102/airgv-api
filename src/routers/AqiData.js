@@ -83,7 +83,7 @@ router.get('/current', async (req, res) => {
 
              return {
                  station_name : station.station_name,
-                 data: currentAqi[0]
+                 aqi: currentAqi[0]
              }
         });
 
