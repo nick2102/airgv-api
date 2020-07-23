@@ -6,9 +6,17 @@ const StationSchema = new mongoose.Schema ({
         type: String,
         required: true,
     },
-    station_name: {
+    stationId: {
         type: String,
         required: true,
+    },
+    stationName: {
+        type: String,
+        required: true,
+    },
+    stationLocation: {
+        type: Object,
+        required: true
     },
     aqi: {
         type: Object,
@@ -45,6 +53,20 @@ StationSchema.statics.timeFormat = async (today) => {
     const minutes =  today.getMinutes() > 9 ? today.getMinutes() : '0' + ( today.getMinutes() );
     const seconds =  today.getSeconds() > 9 ? today.getSeconds() : '0' + ( today.getSeconds() );
     return hours + ':' + minutes + ':' + ':' + seconds;
+}
+
+StationSchema.statics.mapStationNameId = async (isName = true, id) => {
+    const ids = {
+        'golem_pazar' : 'GV-GOLEMPAZAR-01',
+        'makpetrol' : 'GV-MAKPETROL-01'
+    }
+
+    const names = {
+        'golem_pazar' : 'AirGostivar.mk GV - Golem Pazar',
+        'makpetrol' : 'AirGostivar.mk GV - Sretko Krsteski - Makpetrol'
+    }
+
+    return isName ? names[id] : ids[id];
 }
 
 const Station = mongoose.model('Station', StationSchema);
