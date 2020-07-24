@@ -120,7 +120,7 @@ router.get('/measurements/public', async (req, res) => {
 
         const timeNow = await Station.timeToSeconds(momentmomentTz.tz("Europe/Skopje").format('HH:mm:ss'));
         // const timeNow = await Station.timeToSeconds('22:12:16');
-        const timeHourAgo = await Station.timeToSeconds(momentTz().subtract(1, 'hour').format('HH:mm:ss'));
+        const timeHourAgo = await Station.timeToSeconds(moment(momentmomentTz.tz("Europe/Skopje").format()).subtract(1, 'hour').format('HH:mm:ss'));
         // const timeHourAgo = await Station.timeToSeconds('21:12:16');
 
         let averageData = stations.map((station) => {
