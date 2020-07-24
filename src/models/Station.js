@@ -49,9 +49,9 @@ StationSchema.statics.timeToSeconds = async (time) => {
 }
 
 StationSchema.statics.timeFormat = async (today) => {
-    const hours =  today.getHours() > 9 ? today.getHours() : '0' + ( today.getHours() );
-    const minutes =  today.getMinutes() > 9 ? today.getMinutes() : '0' + ( today.getMinutes() );
-    const seconds =  today.getSeconds() > 9 ? today.getSeconds() : '0' + ( today.getSeconds() );
+    const hours =  today.getHours() > 9 ? today.getHours() : '0' + ( today.getUTCHours() );
+    const minutes =  today.getMinutes() > 9 ? today.getMinutes() : '0' + ( today.getUTCMinutes() );
+    const seconds =  today.getSeconds() > 9 ? today.getSeconds() : '0' + ( today.getUTCSeconds() );
     return hours + ':' + minutes + ':' + seconds;
 }
 
