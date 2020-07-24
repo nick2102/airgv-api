@@ -157,9 +157,13 @@ router.get('/measurements/public', async (req, res) => {
             });
 
             response['averageMeasurementsData'] = {
+
                 pm10: (pm10 / lastHourData.length).toFixed(0),
                 "pm2.5": (pm25 / lastHourData.length).toFixed(0)
             };
+
+            response['lastHour'] =lastHourData;
+
 
             return response;
         });
