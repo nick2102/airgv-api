@@ -118,9 +118,10 @@ router.get('/measurements/public', async (req, res) => {
             return res.status(404).send({ isValid: false, error: "No data found." });
         }
 
-        const timeNow = await Station.timeToSeconds(momentmomentTz.tz("Europe/Skopje").format('HH:mm:ss'));
+        const timeNow = await Station.timeToSeconds(momentTz.tz("Europe/Skopje").format('HH:mm:ss'));
         // const timeNow = await Station.timeToSeconds('22:12:16');
-        const timeHourAgo = await Station.timeToSeconds(moment(momentmomentTz.tz("Europe/Skopje").format()).subtract(1, 'hour').format('HH:mm:ss'));
+        const timeHourAgo = await Station.timeToSeconds(moment(momentTz.tz("Europe/Skopje").format()).subtract(1, 'hour').format('HH:mm:ss'));
+
         // const timeHourAgo = await Station.timeToSeconds('21:12:16');
 
         let averageData = stations.map((station) => {
