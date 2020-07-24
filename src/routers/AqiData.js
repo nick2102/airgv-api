@@ -100,9 +100,9 @@ router.get('/current', async (req, res) => {
 // Get current Air Quality My Air
 router.get('/measurements/public', async (req, res) => {
     const today = new Date();
-    const year = today.getFullYear();
-    const month = (today.getMonth() + 1) > 9 ? today.getMonth() + 1 : '0' + ( today.getMonth() + 1 );
-    const day = today.getDate() > 9 ? today.getDate() : '0' + today.getDate();
+    const year = momentTz().tz("Europe/Skopje").format("YYYY");
+    const month = momentTz().tz("Europe/Skopje").format("MM");
+    const day = momentTz().tz("Europe/Skopje").format("DD");;
     const stationId = req.query.stationId && req.query.stationId !=='' ? req.query.stationId : false;
 
     let query = { year: year }
