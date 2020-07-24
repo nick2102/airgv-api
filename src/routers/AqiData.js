@@ -165,7 +165,7 @@ router.get('/measurements/public', async (req, res) => {
                 "pm2.5": (pm25 / lastHourData.length).toFixed(0)
             };
 
-            response['lastHour'] =lastHourData;
+            response['aqi'] =aqi;
 
 
             return response;
