@@ -104,14 +104,11 @@ router.get('/measurements/public', async (req, res) => {
     const month = (today.getMonth() + 1) > 9 ? today.getMonth() + 1 : '0' + ( today.getMonth() + 1 );
     const day = today.getDate() > 9 ? today.getDate() : '0' + today.getDate();
     const stationId = req.query.stationId && req.query.stationId !=='' ? req.query.stationId : false;
-    const currentTime = await momentTz.tz("Europe/Skopje").format('HH:mm:ss');
-    const currentSeconds = await Station.timeToSeconds(currentTime);
-
+    
     let query = { year: year }
 
     try {
-        const stations = await Station.find(query);
-        const currentTime = await Station.timeFormat(today);
+        const currentTime = await momentTz.tz("Europe/Skopje").format('HH:mm:ss');
         const currentSeconds = await Station.timeToSeconds(currentTime);
 
         if(!stations) {
@@ -121,6 +118,8 @@ router.get('/measurements/public', async (req, res) => {
         const timeNow = await Station.timeToSeconds(momentTz.tz("Europe/Skopje").format('HH:mm:ss'));
         // const timeNow = await Station.timeToSeconds('22:12:16');
         const timeHourAgo = await Station.timeToSeconds(moment(momentTz.tz("Europe/Skopje").format()).subtract(1, 'hour').format('HH:mm:ss'));
+        console.log(momentTz.tz("Europe/Skopje").format('HH:mm:ss'));
+        console.log(moment(momentTz.tz("Europe/Skopje").format()).subtract(1, 'hour').format('HH:mm:ss'));
 
         // const timeHourAgo = await Station.timeToSeconds('21:12:16');
 
