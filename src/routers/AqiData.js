@@ -103,6 +103,8 @@ router.get('/measurements/public', async (req, res) => {
     const month = (today.getMonth() + 1) > 9 ? today.getMonth() + 1 : '0' + ( today.getMonth() + 1 );
     const day = today.getDate() > 9 ? today.getDate() : '0' + today.getDate();
     const stationId = req.query.stationId && req.query.stationId !=='' ? req.query.stationId : false;
+    const currentTime = await Station.timeFormat(today);
+    const currentSeconds = await Station.timeToSeconds(currentTime);
 
     let query = { year: year }
 
@@ -116,40 +118,58 @@ router.get('/measurements/public', async (req, res) => {
         }
 
         const timeNow = await Station.timeToSeconds(moment().format('HH:mm:ss'));
-        // const timeNow = await Station.timeToSeconds('20:35:37');
+        // const timeNow = await Station.timeToSeconds('22:12:16');
         const timeHourAgo = await Station.timeToSeconds(moment().subtract(1, 'hour').format('HH:mm:ss'));
-        // const timeHourAgo = await Station.timeToSeconds('19:34:37');
+        // const timeHourAgo = await Station.timeToSeconds('21:12:16');
 
-        // console.log(timeNow);
-        // console.log(timeHourAgo);
-
-        let test = stations.map((station) => {
+        let averageData = stations.map((station) => {
 
             const aqi = station['aqi'][month][day];
+
+            let response  = {
+                stationId: station.stationId.replace('GV', 'AIRGV'),
+                stationName: station.stationName,
+                stationLocation: station.stationLocation,
+            };
+
+            if(!aqi){
+                response['averageMeasurementsData'] = {
+                    pm10: null,
+                    "pm2.5": null
+                };
+
+                return response;
+            }
+
+            if(aqi[0].seconds + 1800 < currentSeconds) {
+                response['averageMeasurementsData'] = {
+                    pm10: null,
+                    "pm2.5": null
+                };
+                return response;
+            }
+
             const lastHourData = aqi.filter(a => a.seconds >= timeHourAgo && a.seconds <= timeNow);
+            let pm10 = 0;
+            let pm25 = 0;
 
-            let pm10, pm25 = 0;
-            const averageMeasurementsData = lastHourData.map((m) => {
-
+            lastHourData.forEach((m) => {
+                pm10 = pm10 + parseFloat(m.pm10);
+                pm25 = pm25 + parseFloat(m.pm25);
             });
 
+            response['averageMeasurementsData'] = {
+                pm10: (pm10 / lastHourData.length).toFixed(0),
+                "pm2.5": (pm25 / lastHourData.length).toFixed(0)
+            };
 
-            const newStation = {
-                averageMeasurementsData : averageMeasurementsData
-            }
-            return newStation;
+            return response;
         });
 
-
-
-        // let test2 = test.map((m) => {
-        //     return m.seconds >= timeHourAgo && m.seconds <= timeNow;
-        // });
-
-        return res.send({ isValid: true, stations: test });
+        return res.send(averageData);
 
     } catch (e) {
-        
+        return res.status(400).send(e);
     }
 });
 
