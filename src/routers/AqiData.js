@@ -150,7 +150,7 @@ router.get('/measurements/public', async (req, res) => {
                 return response;
             }
 
-            const lastHourData = aqi.filter(a => a.seconds >= timeHourAgo && a.seconds <= timeNow);
+            const lastHourData = aqi.filter(a => a.seconds >= parseInt(timeHourAgo) && a.seconds <= parseInt(timeNow));
             let pm10 = 0;
             let pm25 = 0;
 
