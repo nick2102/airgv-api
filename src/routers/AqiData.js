@@ -130,6 +130,7 @@ router.get('/measurements/public', async (req, res) => {
                 stationId: station.stationId.replace('GV', 'AIRGV'),
                 stationName: station.stationName,
                 stationLocation: station.stationLocation,
+                currentTime: currentTime
             };
 
             if(!aqi){
