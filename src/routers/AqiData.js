@@ -102,7 +102,7 @@ router.get('/measurements/public', async (req, res) => {
     const today = new Date();
     const year = momentTz().tz("Europe/Skopje").format("YYYY");
     const month = momentTz().tz("Europe/Skopje").format("MM");
-    const day = momentTz().tz("Europe/Skopje").format("DD");;
+    const day = momentTz().tz("Europe/Skopje").format("DD");
     const stationId = req.query.stationId && req.query.stationId !=='' ? req.query.stationId : false;
 
     let query = { year: year }
@@ -127,7 +127,10 @@ router.get('/measurements/public', async (req, res) => {
                 stationId: station.stationId.replace('GV', 'AIRGV'),
                 stationName: station.stationName,
                 stationLocation: station.stationLocation,
-                currentTime: momentTz().tz("Europe/Skopje").format('HH:mm:ss')
+                currentTime: momentTz().tz("Europe/Skopje").format('HH:mm:ss'),
+                day: day,
+                month: month,
+                year: year
             };
 
             if(!aqi){
