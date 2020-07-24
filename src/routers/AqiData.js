@@ -104,23 +104,19 @@ router.get('/measurements/public', async (req, res) => {
     const month = (today.getMonth() + 1) > 9 ? today.getMonth() + 1 : '0' + ( today.getMonth() + 1 );
     const day = today.getDate() > 9 ? today.getDate() : '0' + today.getDate();
     const stationId = req.query.stationId && req.query.stationId !=='' ? req.query.stationId : false;
-    
+
     let query = { year: year }
 
     try {
-        const currentTime = await momentTz.tz("Europe/Skopje").format('HH:mm:ss');
-        const currentSeconds = await Station.timeToSeconds(currentTime);
+        const stations = await Station.find(query);
 
         if(!stations) {
             return res.status(404).send({ isValid: false, error: "No data found." });
         }
 
-        const timeNow = await Station.timeToSeconds(momentTz.tz("Europe/Skopje").format('HH:mm:ss'));
+        const timeNow = await Station.timeToSeconds(momentTz().tz("Europe/Skopje").format('HH:mm:ss'));
         // const timeNow = await Station.timeToSeconds('22:12:16');
-        const timeHourAgo = await Station.timeToSeconds(moment(momentTz.tz("Europe/Skopje").format()).subtract(1, 'hour').format('HH:mm:ss'));
-        console.log(momentTz.tz("Europe/Skopje").format('HH:mm:ss'));
-        console.log(moment(momentTz.tz("Europe/Skopje").format()).subtract(1, 'hour').format('HH:mm:ss'));
-
+        const timeHourAgo = await Station.timeToSeconds(moment(momentTz().tz("Europe/Skopje").format()).subtract(1, 'hour').format('HH:mm:ss'));
         // const timeHourAgo = await Station.timeToSeconds('21:12:16');
 
         let averageData = stations.map((station) => {
@@ -131,7 +127,7 @@ router.get('/measurements/public', async (req, res) => {
                 stationId: station.stationId.replace('GV', 'AIRGV'),
                 stationName: station.stationName,
                 stationLocation: station.stationLocation,
-                currentTime: currentTime
+                currentTime: momentTz().tz("Europe/Skopje").format('HH:mm:ss')
             };
 
             if(!aqi){
@@ -143,7 +139,7 @@ router.get('/measurements/public', async (req, res) => {
                 return response;
             }
 
-            if(aqi[0].seconds + 1800 < currentSeconds) {
+            if(aqi[0].seconds + 1800 < timeNow) {
                 response['averageMeasurementsData'] = {
                     pm10: null,
                     "pm2.5": null
