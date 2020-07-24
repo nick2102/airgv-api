@@ -2,6 +2,7 @@ const express       = require('express');
 const Station    = require('../models/Station');
 const router        = new express.Router();
 const moment = require('moment');
+const momentTz = require('moment-timezone');
 
 //Home route info
 router.get('/', async (req, res) =>{
@@ -103,7 +104,7 @@ router.get('/measurements/public', async (req, res) => {
     const month = (today.getMonth() + 1) > 9 ? today.getMonth() + 1 : '0' + ( today.getMonth() + 1 );
     const day = today.getDate() > 9 ? today.getDate() : '0' + today.getDate();
     const stationId = req.query.stationId && req.query.stationId !=='' ? req.query.stationId : false;
-    const currentTime = await Station.timeFormat(today);
+    const currentTime = await momentTz.tz("Europe/Skopje").format('HH:mm:ss');
     const currentSeconds = await Station.timeToSeconds(currentTime);
 
     let query = { year: year }
