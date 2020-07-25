@@ -100,23 +100,26 @@ router.get('/current', async (req, res) => {
 // Get current Air Quality My Air
 router.get('/measurements/public', async (req, res) => {
     const today = new Date();
-    const year = momentTz().tz("Europe/Skopje").format("YYYY");
-    const month = momentTz().tz("Europe/Skopje").format("MM");
-    const day = momentTz().tz("Europe/Skopje").format("DD");
+    const year = await momentTz.tz("Europe/Skopje").format("YYYY");
+    const month = await momentTz.tz("Europe/Skopje").format("MM");
+    const day = await momentTz.tz("Europe/Skopje").format("DD");
     const stationId = req.query.stationId && req.query.stationId !=='' ? req.query.stationId : false;
 
     let query = { year: year }
 
     try {
         const stations = await Station.find(query);
+        const currentTime = await momentTz.tz("Europe/Skopje").format("HH:mm:ss");
+        const currentSeconds = await Station.timeToSeconds(currentTime);
+        const secondsHourAgo = await Station.timeToSeconds(momentTz.tz("Europe/Skopje").subtract(1, 'hour').format('HH:mm:ss'));
 
         if(!stations) {
             return res.status(404).send({ isValid: false, error: "No data found." });
         }
 
-        const timeNow = await Station.timeToSeconds(momentTz().tz("Europe/Skopje").format('HH:mm:ss'));
+        // const timeNow = await Station.timeToSeconds(moment().format('HH:mm:ss'));
         // const timeNow = await Station.timeToSeconds('22:12:16');
-        const timeHourAgo = await Station.timeToSeconds(moment(momentTz().tz("Europe/Skopje").format()).subtract(1, 'hour').format('HH:mm:ss'));
+
         // const timeHourAgo = await Station.timeToSeconds('21:12:16');
 
         let averageData = stations.map((station) => {
@@ -127,10 +130,6 @@ router.get('/measurements/public', async (req, res) => {
                 stationId: station.stationId.replace('GV', 'AIRGV'),
                 stationName: station.stationName,
                 stationLocation: station.stationLocation,
-                currentTime: momentTz().tz("Europe/Skopje").format('HH:mm:ss'),
-                day: day,
-                month: month,
-                year: year
             };
 
             if(!aqi){
@@ -141,8 +140,7 @@ router.get('/measurements/public', async (req, res) => {
 
                 return response;
             }
-
-            if(aqi[0].seconds + 1800 < timeNow) {
+            if(aqi[0].seconds + 1800 < currentSeconds) {
                 response['averageMeasurementsData'] = {
                     pm10: null,
                     "pm2.5": null
@@ -150,7 +148,8 @@ router.get('/measurements/public', async (req, res) => {
                 return response;
             }
 
-            const lastHourData = aqi.filter(a => a.seconds >= parseInt(timeHourAgo) && a.seconds <= parseInt(timeNow));
+            const lastHourData = aqi.filter(a => a.seconds >= secondsHourAgo && a.seconds <= currentSeconds);
+
             let pm10 = 0;
             let pm25 = 0;
 
@@ -160,13 +159,9 @@ router.get('/measurements/public', async (req, res) => {
             });
 
             response['averageMeasurementsData'] = {
-
                 pm10: (pm10 / lastHourData.length).toFixed(0),
                 "pm2.5": (pm25 / lastHourData.length).toFixed(0)
             };
-
-            response['aqi'] =aqi;
-
 
             return response;
         });
